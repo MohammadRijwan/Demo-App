@@ -1,0 +1,106 @@
+
+Using Image Picker Plugin
+The second way to add images to Firebase Storage, is to get an image from the gallery, so to do that, navigate to the pubspec.yaml file and add the following dependency:
+
+  image_picker: ^0.6.6+1
+
+
+RaisedButton(child: Text("Pick Image"), onPressed: getImage)
+
+onPressed it will call the method getImage:
+
+Future getImage() async {
+  var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+  setState(() {
+    _image = image;
+  });
+}
+
+
+
+_image == null
+    ? Text('No image selected.')
+    : Image.file(
+        _image,
+        height: 300,
+      ),
+      
+      
+      
+      
+Deleting Image
+
+ Firestore.instance
+      .collection("images")
+      .where("name", isEqualTo: "travelimage4")
+      .getDocuments()
+      .then((res) {
+    res.documents.forEach((result) {
+      FirebaseStorage.instance
+          .getReferenceFromUrl(result.data["url"])
+          .then((res) {
+        res.delete().then((res) {
+          print("Deleted!");
+        });
+      });
+    });
+  });
+  
+  
+  
+  Retrieving Images From Firestore
+  
+  
+  RaisedButton(
+  child: Text("Get Images"),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SecondPage()),
+    );
+  },
+),
+
+final Firestore fb = Firestore.instance;
+
+body: Container(
+  padding: EdgeInsets.all(10.0),
+  child: FutureBuilder(
+    future: getImages(),
+    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+      if (snapshot.connectionState == ConnectionState.done) {
+        return ListView.builder(
+            shrinkWrap: true,
+            itemCount: snapshot.data.documents.length,
+            itemBuilder: (BuildContext context, int index) {
+              return ListTile(
+                contentPadding: EdgeInsets.all(8.0),
+                title:
+                    Text(snapshot.data.documents[index].data["name"]),
+                leading: Image.network(
+                    snapshot.data.documents[index].data["url"],
+                    fit: BoxFit.fill),
+              );
+            });
+      } else if (snapshot.connectionState == ConnectionState.none) {
+        return Text("No data");
+      }
+      return CircularProgressIndicator();
+    },
+  ),
+),
+
+/// code here
+
+  Future<QuerySnapshot> getImages() {
+    return fb.collection("images").getDocuments();
+  }
+
+
+
+
+  
+  
+  
+  
